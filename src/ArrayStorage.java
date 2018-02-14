@@ -2,7 +2,7 @@
  * Array based storage for Resumes
  */
 public class ArrayStorage {
-    Resume[] storage = new Resume[10000];
+    Resume[] storage = new Resume[3];
     int size = 0;
 
     void clear() {
@@ -14,7 +14,16 @@ public class ArrayStorage {
 
     void save(Resume r) {
 
-        for (int i = 0; i < size; i++) {
+        if (isPresent(r.uuid)) {
+            System.out.println("ERROR: Resume is already present");
+            return;
+        }
+
+        if (size == storage.length) {
+            System.out.println("ERROR: storage is FULL");
+        }
+
+        for (int i = 0; i < storage.length; i++) {
             if (storage[i] == null) {
                 storage[i] = r;
                 size++;
@@ -23,7 +32,26 @@ public class ArrayStorage {
         }
     }
 
+
+    void update(Resume r) {
+        if (!isPresent(r.uuid)) {
+            System.out.println("ERROR: Resume is NOT present");
+            return;
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (storage[i] != null && storage[i].uuid.equals(r.uuid)) {
+                storage[i] = r;
+            }
+        }
+
+    }
+
     Resume get(String uuid) {
+        if (!isPresent(uuid)) {
+            System.out.println("ERROR: Resume is NOT present");
+            return null;
+        }
 
         for (int i = 0; i < size; i++) {
             if (storage[i] != null && storage[i].uuid.equals(uuid)) {
@@ -35,6 +63,10 @@ public class ArrayStorage {
     }
 
     void delete(String uuid) {
+        if (!isPresent(uuid)) {
+            System.out.println("ERROR: Resume is NOT present");
+            return;
+        }
 
         for (int i = 0; i < size; i++) {
             if (storage[i].uuid.equals(uuid)) {
@@ -61,5 +93,14 @@ public class ArrayStorage {
 
     int size() {
         return size;
+    }
+
+    private boolean isPresent(String uuid) {
+        for(int i=0; i<size; i++) {
+            if (storage[i].uuid.equals(uuid)){
+                return true;
+            }
+        }
+        return false;
     }
 }
