@@ -59,11 +59,10 @@ public abstract class AbstractArrayStorage implements Storage {
             return;
         }
 
-        __update(index, r);
+//        __update(index, r);
+        storage[index] = r;
 
     }
-
-    protected abstract void __update(int index, Resume r);
 
 
     public void delete(String uuid) {
@@ -81,6 +80,8 @@ public abstract class AbstractArrayStorage implements Storage {
 
     protected abstract void __delete(int index);
 
+    protected abstract int getIndexOf(String uuid);
+
 
     /**
      * @return array, contains only Resumes in storage (without null)
@@ -90,13 +91,5 @@ public abstract class AbstractArrayStorage implements Storage {
         return Arrays.copyOfRange(storage, 0, size);
     }
 
-    protected int getIndexOf(String uuid) {
-        for (int i = 0; i < size; i++) {
-            if (storage[i].getUuid().equals(uuid)) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
 }
