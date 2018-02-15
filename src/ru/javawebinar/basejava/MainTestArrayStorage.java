@@ -2,12 +2,14 @@ package ru.javawebinar.basejava;
 
 import ru.javawebinar.basejava.model.Resume;
 import ru.javawebinar.basejava.storage.ArrayStorage;
+import ru.javawebinar.basejava.storage.SortedArrayStorage;
+import ru.javawebinar.basejava.storage.Storage;
 
 /**
  * Test for ru.javawebinar.basejava.storage.ArrayStorage
  */
 public class MainTestArrayStorage {
-    static final ArrayStorage ARRAY_STORAGE = new ArrayStorage();
+    static final Storage ARRAY_STORAGE = new SortedArrayStorage();
 
     public static void main(String[] args) {
         Resume r1 = new Resume();
@@ -27,6 +29,17 @@ public class MainTestArrayStorage {
         System.out.println("Get dummy: " + ARRAY_STORAGE.get("dummy"));
 
         printAll();
+
+        Resume r2_forUpdate = new Resume();
+        r2_forUpdate.setUuid("uuid2");
+        ARRAY_STORAGE.update(r2_forUpdate);
+        Resume r2_AfterUpdate = ARRAY_STORAGE.get("uuid2");
+        if (r2 != r2_AfterUpdate) {
+            System.out.println("Update of r2 was successful");
+        } else {
+            System.out.println("ERROR: r2 was NOT updated");
+        }
+
         ARRAY_STORAGE.delete(r1.getUuid());
         printAll();
         ARRAY_STORAGE.clear();
