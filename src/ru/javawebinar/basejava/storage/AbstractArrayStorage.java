@@ -74,8 +74,9 @@ public abstract class AbstractArrayStorage implements Storage {
         }
 
         __delete(index);
-        size--;
 
+        storage[size - 1] = null;
+        size--;
     }
 
     protected abstract void __delete(int index);
