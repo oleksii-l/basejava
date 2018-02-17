@@ -88,5 +88,8 @@ public abstract class AbstractArrayStorage implements Storage {
         return Arrays.copyOfRange(storage, 0, size);
     }
 
+    public int capacity() {
+        return storage.length;
+    }
 
 }
