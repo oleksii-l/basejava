@@ -110,8 +110,14 @@ public abstract class AbstractArrayStorageTest {
 
     @Test(expected = StorageException.class)
     public void saveOverFlow() {
-        for (int i = 0; i <= storage.capacity(); i++) {
-            storage.save(new Resume());
+        try {
+            for (int i = 3; i < storage.capacity(); i++) {
+                storage.save(new Resume());
+            }
+        } catch (StorageException e) {
+            Assert.fail();
         }
+
+        storage.save(new Resume());
     }
 }
