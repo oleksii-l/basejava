@@ -1,19 +1,26 @@
 package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.exception.ExistStorageException;
-import ru.javawebinar.basejava.exception.StorageException;
+import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 
 public abstract class AbstractStorage implements Storage {
-    protected static final int STORAGE_LIMIT = 10000;
-
-    protected int size = 0;
 
     @Override
     public abstract void clear();
 
     @Override
-    public abstract void update(Resume r);
+    public void update(Resume r){
+        int index = getIndexOf(r.getUuid());
+
+        if (index < 0) {
+            throw new NotExistStorageException(r.getUuid());
+        }
+
+        __update(index, r);
+    }
+
+    protected abstract void __update(int index, Resume r);
 
     @Override
     public void save(Resume r) {
@@ -23,12 +30,8 @@ public abstract class AbstractStorage implements Storage {
             throw new ExistStorageException(r.getUuid());
         }
 
-        if (size >= STORAGE_LIMIT) {
-            throw new StorageException("Storage overflow", r.getUuid());
-        }
-
         __save(index, r);
-        size++;
+
     }
 
     protected abstract int getIndexOf(String uuid);
@@ -39,18 +42,19 @@ public abstract class AbstractStorage implements Storage {
     public abstract Resume get(String uuid);
 
     @Override
-    public abstract void delete(String uuid);
+    public void delete(String uuid) {
+        int index = getIndexOf(uuid);
+
+        if (index < 0) {
+            throw new NotExistStorageException(uuid);
+        }
+
+        __delete(index);
+    }
+
+    protected abstract void __delete(int index);
 
     @Override
     public abstract Resume[] getAll();
 
-    @Override
-    public int size() {
-        return size;
-    }
-
-    @Override
-    public int capacity() {
-        return STORAGE_LIMIT;
-    }
 }

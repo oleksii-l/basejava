@@ -14,6 +14,11 @@ public class MapStorage extends AbstractStorage {
     }
 
     @Override
+    protected void __update(int index, Resume r) {
+
+    }
+
+    @Override
     public void save(Resume r) {
 
     }
@@ -39,6 +44,11 @@ public class MapStorage extends AbstractStorage {
     }
 
     @Override
+    protected void __delete(int index) {
+
+    }
+
+    @Override
     public Resume[] getAll() {
         return new Resume[0];
     }
@@ -48,8 +58,4 @@ public class MapStorage extends AbstractStorage {
         return 0;
     }
 
-    @Override
-    public int capacity() {
-        return 0;
-    }
 }
