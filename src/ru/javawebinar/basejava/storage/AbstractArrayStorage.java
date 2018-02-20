@@ -1,6 +1,5 @@
 package ru.javawebinar.basejava.storage;
 
-import ru.javawebinar.basejava.exception.ExistStorageException;
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
@@ -8,14 +7,19 @@ import ru.javawebinar.basejava.model.Resume;
 import java.util.Arrays;
 
 public abstract class AbstractArrayStorage extends AbstractStorage {
+    protected static final int STORAGE_LIMIT = 10000;
+
+    protected int size = 0;
 
     protected Resume[] storage = new Resume[STORAGE_LIMIT];
 
+    @Override
     public void clear() {
         Arrays.fill(storage, 0, size, null);
         size = 0;
     }
 
+    @Override
     public Resume get(String uuid) {
         int index = getIndexOf(uuid);
 
@@ -26,38 +30,32 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         return storage[index];
     }
 
-    public int size() {
-        return size;
-    }
-
-    protected abstract void __save(int index, Resume r);
-
-
-    public void update(Resume r) {
-        int index = getIndexOf(r.getUuid());
-
-        if (index < 0) {
-            throw new NotExistStorageException(r.getUuid());
+    @Override
+    protected void __save(int index, Resume r){
+        if (size >= STORAGE_LIMIT) {
+            throw new StorageException("Storage overflow", r.getUuid());
         }
 
+        saveIntoArray(index, r);
+        size++;
+    }
+
+    protected abstract void saveIntoArray(int index, Resume r);
+
+    @Override
+    public void __update(int index, Resume r) {
         storage[index] = r;
     }
 
-
-    public void delete(String uuid) {
-        int index = getIndexOf(uuid);
-
-        if (index < 0) {
-            throw new NotExistStorageException(uuid);
-        }
-
-        __delete(index);
+    @Override
+    protected void __delete(int index) {
+        deleteArray(index);
 
         storage[size - 1] = null;
         size--;
     }
 
-    protected abstract void __delete(int index);
+    protected abstract void deleteArray(int index);
 
     protected abstract int getIndexOf(String uuid);
 
@@ -70,8 +68,12 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         return Arrays.copyOfRange(storage, 0, size);
     }
 
-    public int capacity() {
-        return storage.length;
+    @Override
+    public int size() {
+        return size;
     }
 
+    public int capacity() {
+        return STORAGE_LIMIT;
+    }
 }
