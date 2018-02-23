@@ -13,13 +13,14 @@ public class SortedArrayStorage extends AbstractArrayStorage {
         storage[newIndex] = r;
     }
 
+    @Override
     protected void deleteArray(int index) {
         System.arraycopy(storage, index + 1, storage, index, size - index);
     }
 
 
     @Override
-    protected int getIndexOf(String uuid) {
+    protected Integer getSearchKey(String uuid) {
         Resume searchKey = new Resume(uuid);
         return Arrays.binarySearch(storage, 0, size, searchKey);
     }

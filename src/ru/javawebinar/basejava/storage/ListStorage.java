@@ -1,11 +1,9 @@
 package ru.javawebinar.basejava.storage;
 
-import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ListStorage extends AbstractStorage {
     private List<Resume> storage = new ArrayList<>();
@@ -17,48 +15,35 @@ public class ListStorage extends AbstractStorage {
     }
 
     @Override
-    public Resume get(String uuid) {
-
-        List<Resume> res = storage.stream()
-                .filter(r -> r.getUuid().equals(uuid))
-                .collect(Collectors.toList());
-
-        if (res.isEmpty()) {
-            throw new NotExistStorageException(uuid);
-        }
-
-        return res.get(0);
+    public Resume doGet(Object index) {
+        return storage.get((Integer) index);
     }
 
     @Override
-    protected void __save(int index, Resume r) {
+    protected void doSave(Object index, Resume r) {
         storage.add(r);
     }
 
     @Override
-    public void __update(int index, Resume r) {
-        storage.set(index, r);
+    public void doUpdate(Object index, Resume r) {
+        storage.set((Integer) index, r);
     }
 
     @Override
-    public void __delete(int index) {
-        storage.remove(index);
+    public void doDelete(Object index) {
+        storage.remove(((Integer) index).intValue());
     }
 
     @Override
-    protected int getIndexOf(String uuid) {
-        int i = 0;
-        for (Resume r: storage) {
-            if (r.getUuid().equals(uuid)) {
+    protected Integer getSearchKey(String uuid) {
+        for (int i = 0; i < size(); i++) {
+            if (storage.get(i).getUuid().equals(uuid)) {
                 return i;
             }
-            i++;
         }
 
         return -1;
-
     }
-
 
     /**
      * @return array, contains only Resumes in storage (without null)
@@ -73,5 +58,10 @@ public class ListStorage extends AbstractStorage {
     @Override
     public int size() {
         return storage.size();
+    }
+
+    @Override
+    protected boolean isExist(Object index) {
+        return (Integer) index >= 0;
     }
 }

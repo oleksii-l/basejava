@@ -23,7 +23,6 @@ public abstract class AbstractStorageTest {
     private static final Resume RESUME_4 = new Resume(UUID_4);
 
 
-
     public AbstractStorageTest(Storage storage) {
         this.storage = storage;
     }
@@ -82,7 +81,8 @@ public abstract class AbstractStorageTest {
         try {
             storage.get(UUID_2);
             fail("Resume [" + UUID_2 + "] was NOT deleted");
-        } catch (NotExistStorageException e){}
+        } catch (NotExistStorageException e) {
+        }
     }
 
     @Test
