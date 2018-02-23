@@ -1,6 +1,5 @@
 package ru.javawebinar.basejava.storage;
 
-import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
 
@@ -13,6 +12,10 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
 
     protected Resume[] storage = new Resume[STORAGE_LIMIT];
 
+    protected abstract void saveIntoArray(int index, Resume r);
+
+    protected abstract void deleteArray(int index);
+
     @Override
     public void clear() {
         Arrays.fill(storage, 0, size, null);
@@ -20,49 +23,38 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     }
 
     @Override
-    public Resume get(String uuid) {
-        int index = getIndexOf(uuid);
-
-        if (index < 0) {
-            throw new NotExistStorageException(uuid);
-        }
-
-        return storage[index];
+    public Resume doGet(Object index) {
+        return storage[(Integer) index];
     }
 
     @Override
-    protected void __save(int index, Resume r){
+    protected void doSave(Object index, Resume r) {
         if (size >= STORAGE_LIMIT) {
             throw new StorageException("Storage overflow", r.getUuid());
         }
 
-        saveIntoArray(index, r);
+        saveIntoArray((Integer) index, r);
         size++;
     }
 
-    protected abstract void saveIntoArray(int index, Resume r);
 
     @Override
-    public void __update(int index, Resume r) {
-        storage[index] = r;
+    public void doUpdate(Object index, Resume r) {
+        storage[(Integer) index] = r;
     }
 
     @Override
-    protected void __delete(int index) {
-        deleteArray(index);
+    protected void doDelete(Object index) {
+        deleteArray((Integer) index);
 
         storage[size - 1] = null;
         size--;
     }
 
-    protected abstract void deleteArray(int index);
-
-    protected abstract int getIndexOf(String uuid);
-
-
     /**
      * @return array, contains only Resumes in storage (without null)
      */
+    @Override
     public Resume[] getAll() {
 
         return Arrays.copyOfRange(storage, 0, size);
@@ -75,5 +67,10 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
 
     public int capacity() {
         return STORAGE_LIMIT;
+    }
+
+    @Override
+    protected boolean isExist(Object index) {
+        return (Integer) index >= 0;
     }
 }
