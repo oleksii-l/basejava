@@ -3,6 +3,8 @@ package ru.javawebinar.basejava.storage;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SortedArrayStorage extends AbstractArrayStorage {
 
@@ -24,4 +26,5 @@ public class SortedArrayStorage extends AbstractArrayStorage {
         Resume searchKey = new Resume(uuid, null);
         return Arrays.binarySearch(storage, 0, size, searchKey);
     }
+
 }
