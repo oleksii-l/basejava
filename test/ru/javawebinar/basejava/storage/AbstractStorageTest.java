@@ -6,6 +6,8 @@ import ru.javawebinar.basejava.exception.ExistStorageException;
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 public abstract class AbstractStorageTest {
@@ -16,10 +18,10 @@ public abstract class AbstractStorageTest {
     private static final String UUID_3 = "uuid3";
     private static final String UUID_4 = "uuid4";
 
-    public static final String FULL_NAME_1 = "Ivanov";
-    public static final String FULL_NAME_2 = "Perov";
-    public static final String FULL_NAME_3 = "Sidorov";
-    public static final String FULL_NAME_4 = "Putin";
+    public static final String FULL_NAME_1 = "Petrov";
+    public static final String FULL_NAME_2 = "Sidorov";
+    public static final String FULL_NAME_3 = "Ivanov";
+    public static final String FULL_NAME_4 = "Aaaa";    //first element after sorting
 
     private static final Resume RESUME_1 = new Resume(UUID_1, FULL_NAME_1);
     private static final Resume RESUME_2 = new Resume(UUID_2, FULL_NAME_2);
@@ -94,6 +96,17 @@ public abstract class AbstractStorageTest {
         Resume[] result = storage.getAll();
         assertNotNull(result);
         assertEquals(3, result.length);
+    }
+
+    @Test
+    public void getAllSorted() {
+        List<Resume> result = storage.getAllSorted();
+
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals(FULL_NAME_3, result.get(0).getFullName());
+        assertEquals(FULL_NAME_1, result.get(1).getFullName());
+        assertEquals(FULL_NAME_2, result.get(2).getFullName());
     }
 
     @Test(expected = NotExistStorageException.class)
