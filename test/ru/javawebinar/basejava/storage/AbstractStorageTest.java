@@ -92,13 +92,6 @@ public abstract class AbstractStorageTest {
     }
 
     @Test
-    public void getAll() {
-        Resume[] result = storage.getAll();
-        assertNotNull(result);
-        assertEquals(3, result.length);
-    }
-
-    @Test
     public void getAllSorted() {
         List<Resume> result = storage.getAllSorted();
 

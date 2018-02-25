@@ -8,7 +8,7 @@ import java.util.Comparator;
 
 public abstract class AbstractStorage implements Storage {
 
-    protected abstract Integer getSearchKey(String uuid);
+    protected abstract Object getSearchKey(String uuid);
 
     protected abstract boolean isExist(Object searchKey);
 
@@ -47,10 +47,6 @@ public abstract class AbstractStorage implements Storage {
         Object searchKey = getExistingSearchKey(uuid);
         doDelete(searchKey);
     }
-
-    @Override
-    public abstract Resume[] getAll();
-
 
     private Object getExistingSearchKey(String uuid) {
         Object searchKey = getSearchKey(uuid);
