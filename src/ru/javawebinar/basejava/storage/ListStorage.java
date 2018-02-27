@@ -56,9 +56,7 @@ public class ListStorage extends AbstractStorage<Integer> {
     }
 
     @Override
-    public List<Resume> getAllSorted() {
-        storage.sort(new ResumeComparator());
-        return storage;
+    protected List<Resume> doCopyAll() {
+        return new ArrayList<>(storage);
     }
-
 }
