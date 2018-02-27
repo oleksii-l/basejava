@@ -54,10 +54,9 @@ public abstract class AbstractArrayStorage extends AbstractStorage<Integer> {
     }
 
     @Override
-    public List<Resume> getAllSorted() {
+    protected List<Resume> doCopyAll() {
         return Arrays.stream(storage)
                 .limit(size)
-                .sorted(new ResumeComparator())
                 .collect(Collectors.toList());
     }
 
