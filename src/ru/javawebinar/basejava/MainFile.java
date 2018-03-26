@@ -3,6 +3,8 @@ package ru.javawebinar.basejava;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * gkislin
@@ -10,28 +12,23 @@ import java.io.IOException;
  */
 public class MainFile {
     public static void main(String[] args) {
-        String filePath = ".\\.gitignore";
 
-        File file = new File(filePath);
-        try {
-            System.out.println(file.getCanonicalPath());
-        } catch (IOException e) {
-            throw new RuntimeException("Error", e);
-        }
+        String dirPath = "./";
+        File projectDir = new File(dirPath);
 
-        File dir = new File("./src/ru/javawebinar/basejava");
-        System.out.println(dir.isDirectory());
-        String[] list = dir.list();
-        if (list != null) {
-            for (String name : list) {
-                System.out.println(name);
-            }
-        }
+        printDir(dirPath, projectDir);
+    }
 
-        try (FileInputStream fis = new FileInputStream(filePath)) {
-            System.out.println(fis.read());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static void printDir(String path, File dir) {
+        Objects.requireNonNull(dir);
+        Arrays.stream(dir.list())
+                .forEach(d -> {
+                    File current = new File(path + '/' + d);
+                    if (current.isDirectory()) {
+                        printDir(current.getAbsolutePath(), current);
+                    } else {
+                        System.out.println(current.getName() + "|" + current.getAbsolutePath());
+                    }
+                });
     }
 }
