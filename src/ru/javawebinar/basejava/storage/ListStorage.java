@@ -6,57 +6,55 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListStorage extends AbstractStorage<Integer> {
-    private List<Resume> storage = new ArrayList<>();
-
-
-    @Override
-    public void clear() {
-        storage.clear();
-    }
-
-    @Override
-    public Resume doGet(Integer index) {
-        return storage.get(index);
-    }
-
-    @Override
-    protected void doSave(Integer index, Resume r) {
-        storage.add(r);
-    }
-
-    @Override
-    public void doUpdate(Integer index, Resume r) {
-        storage.set(index, r);
-    }
-
-    @Override
-    public void doDelete(Integer index) {
-        storage.remove(index.intValue());
-    }
+    private List<Resume> list = new ArrayList<>();
 
     @Override
     protected Integer getSearchKey(String uuid) {
-        for (int i = 0; i < size(); i++) {
-            if (storage.get(i).getUuid().equals(uuid)) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getUuid().equals(uuid)) {
                 return i;
             }
         }
+        return null;
+    }
 
-        return -1;
+    @Override
+    protected boolean isExist(Integer searchKey) {
+        return searchKey != null;
+    }
+
+    @Override
+    protected void doUpdate(Resume r, Integer searchKey) {
+        list.set(searchKey, r);
+    }
+
+    @Override
+    protected void doSave(Resume r, Integer searchKey) {
+        list.add(r);
+    }
+
+    @Override
+    protected Resume doGet(Integer searchKey) {
+        return list.get(searchKey);
+    }
+
+    @Override
+    protected void doDelete(Integer searchKey) {
+        list.remove(searchKey.intValue());
+    }
+
+    @Override
+    public void clear() {
+        list.clear();
+    }
+
+    @Override
+    public List<Resume> doCopyAll() {
+        return new ArrayList<>(list);
     }
 
     @Override
     public int size() {
-        return storage.size();
-    }
-
-    @Override
-    protected boolean isExist(Integer index) {
-        return index >= 0;
-    }
-
-    @Override
-    protected List<Resume> doCopyAll() {
-        return new ArrayList<>(storage);
+        return list.size();
     }
 }

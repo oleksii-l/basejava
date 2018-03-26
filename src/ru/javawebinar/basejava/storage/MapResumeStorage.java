@@ -16,17 +16,17 @@ public class MapResumeStorage extends AbstractStorage<Resume> {
     }
 
     @Override
+    protected void doUpdate(Resume r, Resume resume) {
+        map.put(r.getUuid(), r);
+    }
+
+    @Override
     protected boolean isExist(Resume resume) {
         return resume != null;
     }
 
     @Override
-    protected void doUpdate(Resume searchKey, Resume r) {
-        map.put(r.getUuid(), r);
-    }
-
-    @Override
-    protected void doSave(Resume searchKey, Resume r) {
+    protected void doSave(Resume r, Resume resume) {
         map.put(r.getUuid(), r);
     }
 
@@ -46,7 +46,7 @@ public class MapResumeStorage extends AbstractStorage<Resume> {
     }
 
     @Override
-    protected List<Resume> doCopyAll() {
+    public List<Resume> doCopyAll() {
         return new ArrayList<>(map.values());
     }
 
