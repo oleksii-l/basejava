@@ -4,11 +4,7 @@ import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * gkislin
@@ -30,16 +26,22 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     public void clear() {
-        Optional<File[]> files = Optional.ofNullable(directory.listFiles());
-        for (File file : files.orElse(new File[0])) {
-            file.delete();
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            doDelete(file);
         }
     }
 
     @Override
     public int size() {
-        Optional<File[]> files = Optional.ofNullable(directory.listFiles());
-        return files.orElse(new File[0]).length;
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return 0;
+        }
+        return files.length;
     }
 
     @Override
@@ -60,26 +62,40 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
     @Override
     protected void doSave(Resume r, File file) {
         try {
-            file.createNewFile();
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
             doWrite(r, file);
         } catch (IOException e) {
             throw new StorageException("IO error", file.getName(), e);
         }
     }
 
-    protected void doWrite(Resume r, File file) {
+    protected void doWrite(Resume r, File file) throws IOException {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
             oos.writeObject(r);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
     @Override
     protected Resume doGet(File file) {
+        if (!file.exists()) {
+            throw new StorageException("File does not exist");
+        }
+
+        try {
+            return doRead(file);
+        } catch (IOException e) {
+            return null;
+        }
+
+    }
+
+    protected Resume doRead(File file) throws IOException {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (Resume) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
@@ -92,9 +108,15 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     protected List<Resume> doCopyAll() {
-        Optional<File[]> files = Optional.ofNullable(directory.listFiles());
-        return Arrays.stream(files.orElse(new File[]{}))
-                .map(this::doGet)
-                .collect(Collectors.toList());
+        List<Resume> result = new ArrayList<>();
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return result;
+        }
+        for (File file : files) {
+            result.add(doGet(file));
+        }
+
+        return result;
     }
 }

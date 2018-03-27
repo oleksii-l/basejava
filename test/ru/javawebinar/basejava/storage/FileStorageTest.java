@@ -5,7 +5,6 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
 import java.io.File;
-import java.util.Optional;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FileStorageTest extends AbstractStorageTest {
@@ -17,8 +16,11 @@ public class FileStorageTest extends AbstractStorageTest {
         if (!testStorageDir.exists()) {
             testStorageDir.mkdir();
         } else {
-            Optional<File[]> files = Optional.ofNullable(testStorageDir.listFiles());
-            for (File file : files.orElse(new File[0])) {
+            File[] files = testStorageDir.listFiles();
+            if (files == null) {
+                return;
+            }
+            for (File file : files) {
                 file.delete();
             }
         }

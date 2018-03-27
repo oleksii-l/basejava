@@ -15,28 +15,27 @@ import java.util.Objects;
 public class Organization {
     private final Link homePage;
 
-    private List<Pair<LocalDate, LocalDate>> periods = new ArrayList<>();
-    private final String title;
-    private final String description;
+    private List<Position> positions = new ArrayList<>();
 
     public Organization(String name, String url, LocalDate startDate, LocalDate endDate, String title) {
         this(name, url, startDate, endDate, title, null);
     }
 
     public Organization(String name, String url, LocalDate startDate, LocalDate endDate, String title, String description) {
-        Objects.requireNonNull(startDate, "startDate must not be null");
-        Objects.requireNonNull(endDate, "endDate must not be null");
-        Objects.requireNonNull(title, "title must not be null");
         this.homePage = new Link(name, url);
-        this.title = title;
-        this.description = description;
-        addPeriod(startDate, endDate);
+        positions.add(new Position(startDate, endDate, title, description));
     }
 
-    public void addPeriod(LocalDate startDate, LocalDate endDate) {
-        Objects.requireNonNull(startDate, "startDate must not be null");
-        Objects.requireNonNull(endDate, "endDate must not be null");
-        periods.add(new Pair<>(startDate, endDate));
+    public void addPosition(LocalDate startDate, LocalDate endDate, String title, String description) {
+        positions.add(new Position(startDate, endDate, title, description));
+    }
+
+    public void addPosition(Position position) {
+        positions.add(position);
+    }
+
+    public List<Position> getPositions() {
+        return positions;
     }
 
     @Override
@@ -45,23 +44,48 @@ public class Organization {
         if (o == null || getClass() != o.getClass()) return false;
         Organization that = (Organization) o;
         return Objects.equals(homePage, that.homePage) &&
-                Objects.equals(periods, that.periods) &&
-                Objects.equals(title, that.title);
+                Objects.equals(positions, that.positions);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(homePage, periods, title);
+        return Objects.hash(homePage, positions);
     }
 
     @Override
     public String toString() {
         return "Organization{" +
                 "homePage=" + homePage +
-                ", periods=" + periods +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
+                ", positions=" + positions +
                 '}';
+    }
+
+    public static class Position {
+        private final LocalDate startDate;
+        private final LocalDate endDate;
+        private final String title;
+        private final String description;
+
+        public Position(LocalDate startDate, LocalDate endDate, String title, String description) {
+            Objects.requireNonNull(startDate, "startDate must not be null");
+            Objects.requireNonNull(endDate, "endDate must not be null");
+            Objects.requireNonNull(title, "title must not be null");
+
+            this.startDate = startDate;
+            this.endDate = endDate;
+            this.title = title;
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return "Position{" +
+                    "startDate=" + startDate +
+                    ", endDate=" + endDate +
+                    ", title='" + title + '\'' +
+                    ", description='" + description + '\'' +
+                    '}';
+        }
     }
 }
