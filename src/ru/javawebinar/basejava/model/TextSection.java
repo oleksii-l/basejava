@@ -1,5 +1,8 @@
 package ru.javawebinar.basejava.model;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 public class TextSection extends Section {
@@ -39,6 +42,16 @@ public class TextSection extends Section {
     @Override
     public int hashCode() {
         return content.hashCode();
+    }
+
+    @Override
+    public void writeTo(DataOutputStream dos) throws IOException {
+        dos.writeUTF(content);
+    }
+
+    @Override
+    public void readFrom(DataInputStream dis) throws IOException {
+        content = dis.readUTF();
     }
 }
 
