@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static ru.javawebinar.basejava.util.DataStreamUtil.getOptionalValue;
-import static ru.javawebinar.basejava.util.DataStreamUtil.handlingConsumerWrapper;
+import static ru.javawebinar.basejava.util.DataStreamUtil.*;
 
 public class DataStreamSerializer implements StreamSerializer {
 
@@ -32,45 +31,59 @@ public class DataStreamSerializer implements StreamSerializer {
                 dos.writeUTF(entry.getValue().getClass().getName());
                 dos.writeUTF(entry.getKey().name());
 
-                writeSectionTo(dos, entry.getValue());
+                writeSectionTo(dos, entry.getValue(), entry.getKey());
 
             }
         }
     }
 
-    private void writeSectionTo(DataOutputStream dos, Section section) throws IOException {
+    private void writeSectionTo(DataOutputStream dos, Section section, SectionType type) throws IOException {
 
         String className = section.getClass().getName();
         dos.writeUTF(className);
 
-        if (className.equals(ListSection.class.getName())) {
-            ListSection listSection = (ListSection) section;
-            dos.writeInt(listSection.getItems().size());
-            listSection.getItems().forEach(handlingConsumerWrapper(dos::writeUTF, IOException.class));
-        } else if (className.equals(OrganizationSection.class.getName())) {
-            OrganizationSection orgSection = (OrganizationSection) section;
-            dos.writeInt(orgSection.getOrganizations().size());
-            orgSection.getOrganizations().forEach(handlingConsumerWrapper(org -> {
-                dos.writeUTF(org.getHomePage().getName());
-                String url = org.getHomePage().getUrl();
-                dos.writeUTF(getOptionalValue(url));
-                dos.writeInt(org.getPositions().size());
-                org.getPositions().forEach(handlingConsumerWrapper(p -> {
-                    dos.writeUTF(p.getStartDate().toString());
-                    dos.writeUTF(p.getEndDate().toString());
-                    dos.writeUTF(p.getTitle());
-                    String desc = p.getDescription();
-                    dos.writeUTF(getOptionalValue(desc));
+        switch (type) {
+            case OBJECTIVE:
+            case PERSONAL:
+                TextSection textSection = (TextSection) section;
+                dos.writeUTF(textSection.getContent());
+                break;
+
+            case EXPERIENCE:
+            case EDUCATION:
+                OrganizationSection orgSection = (OrganizationSection) section;
+                dos.writeInt(orgSection.getOrganizations().size());
+                orgSection.getOrganizations().forEach(handlingConsumerWrapper(org -> {
+                    Link homePage = org.getHomePage();
+                    if (homePage == null) {
+                        dos.writeUTF(DUMMY_VALUE_FOR_NULL);
+                    } else {
+                        dos.writeUTF(homePage.getName());
+                        String url = homePage.getUrl();
+                        dos.writeUTF(getOptionalValue(url));
+                    }
+                    dos.writeInt(org.getPositions().size());
+                    org.getPositions().forEach(handlingConsumerWrapper(p -> {
+                        dos.writeUTF(p.getStartDate().toString());
+                        dos.writeUTF(p.getEndDate().toString());
+                        dos.writeUTF(p.getTitle());
+                        String desc = p.getDescription();
+                        dos.writeUTF(getOptionalValue(desc));
+                    }, IOException.class));
                 }, IOException.class));
-            }, IOException.class));
+                break;
 
-        } else if (className.equals(TextSection.class.getName())) {
-            TextSection textSection = (TextSection) section;
-            dos.writeUTF(textSection.getContent());
+            case ACHIEVEMENT:
+            case QUALIFICATIONS:
+                ListSection listSection = (ListSection) section;
+                dos.writeInt(listSection.getItems().size());
+                listSection.getItems().forEach(handlingConsumerWrapper(dos::writeUTF, IOException.class));
+                break;
 
-        } else {
-            throw new IOException("Unsupported class: " + className);
+            default:
+                throw new IOException("Unsupported class: " + className);
         }
+
     }
 
     @Override
@@ -95,7 +108,7 @@ public class DataStreamSerializer implements StreamSerializer {
                     throw new IOException("Could not instantiate class: " + className);
                 }
                 Section section = (Section) clazz.newInstance();
-                section = readSectionFrom(dis, section);
+                section = readSectionFrom(dis, section, sectionType);
                 resume.addSection(sectionType, section);
             }
 
@@ -108,48 +121,58 @@ public class DataStreamSerializer implements StreamSerializer {
     }
 
 
-    private Section readSectionFrom(DataInputStream dis, Section section) throws IOException {
+    private Section readSectionFrom(DataInputStream dis, Section section, SectionType type) throws IOException {
 
         String className = section.getClass().getName();
 
-        if (className.equals(ListSection.class.getName())) {
-            ListSection listSection = (ListSection) section;
-            int size = dis.readInt();
-            for (int i = 0; i < size; i++) {
-                listSection.getItems().add(dis.readUTF());
-            }
+        switch (type) {
+            case OBJECTIVE:
+            case PERSONAL:
+                TextSection textSection = (TextSection) section;
+                textSection.setContent(dis.readUTF());
 
-            return listSection;
-        } else if (className.equals(OrganizationSection.class.getName())) {
-            OrganizationSection orgSection = (OrganizationSection) section;
-            int size = dis.readInt();
-            for (int i = 0; i < size; i++) {
-                String name = dis.readUTF();
-                String url = dis.readUTF();
-                Link link = new Link(name, DataStreamUtil.getOptionalValue(url));
-                int posSize = dis.readInt();
-                List<Organization.Position> positions = new ArrayList<>(posSize);
-                for (int y = 0; y < posSize; y++) {
-                    LocalDate startDate = LocalDate.parse(dis.readUTF());
-                    LocalDate endDate = LocalDate.parse(dis.readUTF());
-                    String title = dis.readUTF();
-                    String desc = dis.readUTF();
-                    Organization.Position position = new Organization.Position(
-                            startDate, endDate, title, DataStreamUtil.getOptionalValue(desc)
-                    );
-                    positions.add(position);
+                return textSection;
+
+            case EXPERIENCE:
+            case EDUCATION:
+                OrganizationSection orgSection = (OrganizationSection) section;
+                int size = dis.readInt();
+                for (int i = 0; i < size; i++) {
+                    String name = dis.readUTF();
+                    Link link = null;
+                    if (!name.equals(DUMMY_VALUE_FOR_NULL)) {
+                        String url = dis.readUTF();
+                        link = new Link(name, DataStreamUtil.getOptionalValue(url));
+                    }
+                    int posSize = dis.readInt();
+                    List<Organization.Position> positions = new ArrayList<>(posSize);
+                    for (int y = 0; y < posSize; y++) {
+                        LocalDate startDate = LocalDate.parse(dis.readUTF());
+                        LocalDate endDate = LocalDate.parse(dis.readUTF());
+                        String title = dis.readUTF();
+                        String desc = dis.readUTF();
+                        Organization.Position position = new Organization.Position(
+                                startDate, endDate, title, DataStreamUtil.getOptionalValue(desc)
+                        );
+                        positions.add(position);
+                    }
+                    orgSection.getOrganizations().add(new Organization(link, positions));
                 }
-                orgSection.getOrganizations().add(new Organization(link, positions));
-            }
 
-            return orgSection;
-        } else if (className.equals(TextSection.class.getName())) {
-            TextSection textSection = (TextSection) section;
-            textSection.setContent(dis.readUTF());
+                return orgSection;
 
-            return textSection;
-        } else {
-            throw new IOException("Unsupported class: " + className);
+            case ACHIEVEMENT:
+            case QUALIFICATIONS:
+                ListSection listSection = (ListSection) section;
+                size = dis.readInt();
+                for (int i = 0; i < size; i++) {
+                    listSection.getItems().add(dis.readUTF());
+                }
+
+                return listSection;
+
+            default:
+                throw new IOException("Unsupported class: " + className);
         }
 
     }
