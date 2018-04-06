@@ -8,6 +8,9 @@ public class MainConcurrency {
     private int counter;
     private static final Object LOCK = new Object();
 
+    private static final Object LOCK1 = new Object();
+    private static final Object LOCK2 = new Object();
+
     public static void main(String[] args) throws InterruptedException {
         System.out.println(Thread.currentThread().getName());
 
@@ -58,6 +61,44 @@ public class MainConcurrency {
             }
         });
         System.out.println(mainConcurrency.counter);
+
+        // Dead lock
+        System.out.println("============== Dead Lock =================");
+        Thread thread1 = new Thread(() -> {
+            synchronized (LOCK1) {
+                System.out.println("Thread 1: lock 1");
+                try {
+//                    LOCK1.wait(500);
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                synchronized (LOCK2) {
+                    System.out.println("Thread 1: Lock 2");
+                }
+            }
+        });
+
+        Thread thread2 = new Thread(() -> {
+            synchronized (LOCK2) {
+                System.out.println("Thread 2: lock 2");
+                try {
+//                    LOCK2.wait(500);
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                synchronized (LOCK1) {
+                    System.out.println("Thread 2: lock 1");
+                }
+            }
+        });
+
+
+        thread1.start();
+        thread2.start();
+
     }
 
     private synchronized void inc() {
